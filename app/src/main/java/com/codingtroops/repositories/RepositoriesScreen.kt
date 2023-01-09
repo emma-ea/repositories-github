@@ -9,18 +9,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemsIndexed
 
 
 @Composable
-fun RepositoriesScreen(repos: List<Repository>) {
+fun RepositoriesScreen(repos: LazyPagingItems<Repository>) {
     LazyColumn(
         contentPadding = PaddingValues(
             vertical = 8.dp,
             horizontal = 8.dp
         )
     ) {
-        itemsIndexed(repos) { index, repo ->
-            RepositoryItem(index, repo) }
+        itemsIndexed(repos) { idx, repo ->
+            if (repo != null) {
+                RepositoryItem(index = idx, item = repo)
+            }
+        }
     }
 }
 
@@ -28,7 +33,9 @@ fun RepositoriesScreen(repos: List<Repository>) {
 fun RepositoryItem(index: Int, item: Repository) {
     Card(
         elevation = 4.dp,
-        modifier = Modifier.padding(8.dp).height(120.dp)
+        modifier = Modifier
+            .padding(8.dp)
+            .height(120.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
