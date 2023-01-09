@@ -7,8 +7,10 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemsIndexed
 
@@ -25,6 +27,70 @@ fun RepositoriesScreen(repos: LazyPagingItems<Repository>) {
             if (repo != null) {
                 RepositoryItem(index = idx, item = repo)
             }
+        }
+        val refreshLoadState = repos.loadState.refresh
+        val appendLoadState = repos.loadState.append
+        when {
+            refreshLoadState is LoadState.Loading -> {
+                item {
+                    LoadingItem(Modifier.fillParentMaxSize())
+                }
+            }
+            refreshLoadState is LoadState.Error -> {
+                val error = refreshLoadState.error
+                item {
+                    ErrorItem(
+                        message = error.localizedMessage ?: "",
+                        modifier = Modifier.fillParentMaxSize()
+                    ) {
+                        repos.retry()
+                    }
+                }
+            }
+            appendLoadState is LoadState.Loading -> {
+                item {
+                    LoadingItem(Modifier.fillMaxWidth())
+                }
+            }
+            appendLoadState is LoadState.Error -> {
+                val error = appendLoadState.error
+                item {
+                    ErrorItem(message = error.localizedMessage ?: "") {
+                        repos.retry()
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable 
+fun LoadingItem(modifier: Modifier = Modifier) {
+    Column (
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.padding(24.dp)
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+fun ErrorItem(message: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Row (
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.padding(16.dp)
+    ) {
+        Text(
+            text = message,
+            maxLines = 2,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.h6,
+            color = Color.Red
+        )
+        Button(onClick = onClick, modifier = Modifier.padding(8.dp)) {
+            Text("Retry")
         }
     }
 }
